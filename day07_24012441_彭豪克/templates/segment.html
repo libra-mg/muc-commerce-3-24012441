@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}生命周期分析 | 电商用户分析系统{% endblock %}
+{% block content %}
+<section class="hero compact">
+    <div>
+        <p class="eyebrow">LIFECYCLE INSIGHTS</p>
+        <h1>用户生命周期阶段分析</h1>
+        <p class="lead">查看不同生命周期分组的流失与行为指标，识别高风险阶段。</p>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <h2>各生命周期阶段对比</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>生命周期</th>
+                    <th>用户数</th>
+                    <th>流失人数</th>
+                    <th>流失率</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in segments %}
+                <tr>
+                    <td>{{ row['TenureGroup'] }}</td>
+                    <td>{{ row['用户数'] }}</td>
+                    <td>{{ row['流失人数'] }}</td>
+                    <td>{{ "{:.1%}".format(row['流失率']) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<aside class="insight">
+    <strong>数据观察：</strong>{{ insight }}
+</aside>
+
+<p style="margin-top: 2rem;">
+    <a class="button" href="{{ url_for('dashboard') }}">← 返回看板</a>
+</p>
+{% endblock %}
