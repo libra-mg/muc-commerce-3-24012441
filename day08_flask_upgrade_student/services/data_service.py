@@ -14,19 +14,16 @@ def load_dashboard_data(base_dir: Path, selected_category: str = "全部") -> di
     segment_df = _read_csv(data_dir / "segment_analysis.csv")
 
     metric_map = dict(zip(metrics_df["指标"], metrics_df["数值"]))
-    #  2-1：在已有两张指标卡基础上，增加“总体流失率”和“平均订单数”。
     metrics = [
         {"label": "总用户数", "value": f"{int(metric_map['用户数']):,}", "note": "人"},
         {"label": "流失用户", "value": f"{int(metric_map['流失人数']):,}", "note": "人"},
-        {"label": "总体流失率", "value": f"{metric_map['流失率']:.1%}", "note": ""},
+        {"label": "总体流失率", "value": f"{metric_map['流失率']:.1%}", "note": "用户占比"},
         {"label": "平均订单数", "value": f"{metric_map['平均订单数']:.2f}", "note": "单/人"},
     ]
 
     categories = ["全部", *category_df["PreferedOrderCat"].tolist()]
     table_df = category_df.copy()
-    #  3-1：选择具体品类后筛选table_df。
-    # 提示：教师参考项目中使用布尔条件筛选。
-    if selected_category != "全部":
+    if selected_category != "全部" and selected_category in categories:
         table_df = table_df[table_df["PreferedOrderCat"] == selected_category]
 
     table_df = table_df.rename(
@@ -40,13 +37,10 @@ def load_dashboard_data(base_dir: Path, selected_category: str = "全部") -> di
     table_df["流失率"] = table_df["流失率"].map(lambda value: f"{value:.1%}")
     table_df["平均订单数"] = table_df["平均订单数"].map(lambda value: f"{value:.2f}")
 
-    #  2-2：找出流失率最高的生命周期阶段，并生成一句数据观察。
-    max_idx = segment_df["流失率"].idxmax()
-    highest_segment = segment_df.loc[max_idx, "TenureGroup"]
-    highest_rate = segment_df.loc[max_idx, "流失率"]
+    highest_risk = segment_df.loc[segment_df["流失率"].idxmax()]
     insight = (
-        f"生命周期阶段中，'{highest_segment}' 的流失率最高，达到 {highest_rate:.1%}，"
-        f"该阶段用户数为 {int(segment_df.loc[max_idx, '用户数'])} 人。"
+        f"{highest_risk['TenureGroup']}的流失率最高，为{highest_risk['流失率']:.1%}。"
+        "这是一项描述性观察，不能直接解释流失原因。"
     )
 
     return {
@@ -57,17 +51,14 @@ def load_dashboard_data(base_dir: Path, selected_category: str = "全部") -> di
     }
 
 
-def get_segment_analysis(base_dir: Path):
-    """读取生命周期分析数据，并返回记录和观察结论"""
-    data_dir = base_dir / "data"
-    segment_df = _read_csv(data_dir / "segment_analysis.csv")
-    # 找出流失率最高的行
-    max_idx = segment_df["流失率"].idxmax()
-    highest_segment = segment_df.loc[max_idx, "TenureGroup"]
-    highest_rate = segment_df.loc[max_idx, "流失率"]
-    insight = (
-        f"生命周期阶段中，'{highest_segment}' 的流失率最高，达到 {highest_rate:.1%}，"
-        f"该阶段用户数为 {int(segment_df.loc[max_idx, '用户数'])} 人。"
-    )
-    records = segment_df.to_dict("records")
-    return records, insight
+def load_metric_api_data(base_dir: Path) -> list[dict]:
+    """返回给JSON接口使用的指标卡数据。"""
+    data = load_dashboard_data(base_dir)
+    # TODO 8-4：确保接口返回可被jsonify序列化的普通Python值。
+    return data["metrics"]
+
+
+def load_category_api_data(base_dir: Path, selected_category: str = "全部") -> list[dict]:
+    """返回给JSON接口使用的筛选表格数据。"""
+    data = load_dashboard_data(base_dir, selected_category)
+    return data["category_rows"]
