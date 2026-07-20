@@ -45,8 +45,21 @@ git push
 
 ## 学生信息
 
-- 姓名：TODO
-- 学号：TODO
-- 已完成路由或接口：TODO
-- 测试文件：TODO
-- 尚未解决的问题：TODO
+- 姓名：彭豪克
+- 学号：24012441
+- 已完成路由或接口：  
+/health - 健康检查接口（无需登录，返回服务状态）  
+/api/metrics - 指标卡数据接口（登录后返回 JSON，含 label/value/note）  
+/api/categories - 品类筛选接口（支持 ？category=Fashion 参数，筛选逻辑生效）  
+/api/ask - 智能问答接口（POST 请求，返回规则问答结果）  
+/login - 登录接口（GET/POST，账号 student/day07）  
+/logout - 退出登录  
+/dashboard - 数据看板页面（含指标卡、表格、图表）  
+/assistant - 智能问答页面
+- 测试文件：  
+tests/test_api.py - 已编写并全部通过（4 passed）：  
+test_health：测试 /health 返回 200  
+test_metrics_unauthorized：测试未登录被拦截  
+test_metrics_authorized：测试登录后可获取指标数据  
+test_categories_filter_fashion：测试品类筛选生效
+- 尚未解决的问题：无
